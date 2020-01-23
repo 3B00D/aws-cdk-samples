@@ -10,6 +10,8 @@ This repo currently inlcude one example which covers building a deployment pipel
 
 ## CI
 
+![CI Diagram](cdk/assets/ci.jpeg)
+
 ### How it was created
 
 The following steps are just a demonstration of what i needed to do to started.
