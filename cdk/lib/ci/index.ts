@@ -4,6 +4,7 @@ import codebuild = require('@aws-cdk/aws-codebuild');
 import codepipeline = require('@aws-cdk/aws-codepipeline');
 import codepipeline_actions = require('@aws-cdk/aws-codepipeline-actions');
 import cicd = require('@aws-cdk/app-delivery');
+import { BuildSpec } from '@aws-cdk/aws-codebuild';
 
 export interface CIStage {
     output: codepipeline.Artifact
@@ -13,7 +14,8 @@ export interface CIStageProps {
     stageName: string,
     source: string,
     sourceStep?: number,
-    actionName?: string
+    actionName?: string,
+    buildSpec?: string | object
 }
 
 export interface CIGithubProps {
@@ -101,10 +103,22 @@ export class CI extends NestedStack {
     createStage(id: string, props: CIStageProps) {
         // TODO: change the code build image to be a bit more dynamic.
         var buildImage = codebuild.LinuxBuildImage.STANDARD_3_0
+        var buildSpec
+        if (props.buildSpec) {
+            if (typeof props.buildSpec == 'string') {
+                buildSpec = codebuild.BuildSpec.fromSourceFilename(props.buildSpec)
+            } else {
+                buildSpec = codebuild.BuildSpec.fromObject(props.buildSpec)
+            }
+        } else {
+            buildSpec = codebuild.BuildSpec.fromSourceFilename('buildspec.yml')
+        }
+        
         const project = new codebuild.PipelineProject(this, `${id}CodeBuild${props.stageName}`, {
             environment: {
                 buildImage: buildImage,
-            }
+            },
+            buildSpec
         });
         const outputArtifact = new codepipeline.Artifact();
         var inputArtifact
